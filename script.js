@@ -8,7 +8,8 @@ document.querySelectorAll('[data-project]').forEach(button=>button.addEventListe
  document.querySelector('#dialog-title').textContent=project.title;
  const content=document.querySelector('#dialog-content');content.replaceChildren();
  [project.description,project.detail].forEach(text=>{const p=document.createElement('p');p.textContent=text;content.append(p)});
- project.images.forEach(([file,caption])=>{const figure=document.createElement('figure');const link=document.createElement('a');link.href='assets/projects/'+file+'.png';link.target='_blank';link.rel='noopener';link.setAttribute('aria-label','Open full-size screenshot: '+caption);const img=document.createElement('img');img.src=link.href;img.alt=caption;img.loading='lazy';link.append(img);const label=document.createElement('figcaption');label.textContent=caption;figure.append(link,label);content.append(figure)});
+ if(button.dataset.project === "befit") renderBefitDemo(content);
+ else project.images.forEach(([file,caption])=>{const figure=document.createElement('figure');const link=document.createElement('a');link.href='assets/projects/'+file+'.png';link.target='_blank';link.rel='noopener';link.setAttribute('aria-label','Open full-size screenshot: '+caption);const img=document.createElement('img');img.src=link.href;img.alt=caption;img.loading='lazy';link.append(img);const label=document.createElement('figcaption');label.textContent=caption;figure.append(link,label);content.append(figure)});
  dialog.showModal();dialog.scrollTop=0;
 }));
 document.querySelector('.close').addEventListener('click',()=>dialog.close());
@@ -20,3 +21,22 @@ function move(direction){track.scrollBy({left:direction*(track.querySelector('.c
 prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
 track.addEventListener('keydown',e=>{if(e.target!==track)return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1)}});
 track.addEventListener('scroll',updateArrows);window.addEventListener('resize',updateArrows);updateArrows();
+
+function renderBefitDemo(content){
+ const screens=[
+ ['home','Dashboard','Your progress at a glance','Current weight, weekly average, and a target overview in one place.'],
+ ['entry','Add weight','A simple daily check-in','Choose a date, enter your weight, and add an optional note.'],
+ ['graph','Trends','See the bigger picture','Explore your weight history across different time ranges.'],
+ ['metrics','Metrics','Make it personal','Review body metrics and switch between metric and imperial units.'],
+ ['onboarding','Getting started','Local first, from day one','Profile setup introduces optional iCloud sync while keeping the app useful offline.'],
+ ['settings','Settings','Your routine, your preferences','Review sync status, schedule reminders, and explore app settings.']
+ ];
+ const demo=document.createElement('div');demo.className='befit-demo';
+ demo.innerHTML='<div class="demo-device"><a class="demo-full" target="_blank" rel="noopener"><img class="demo-screen" width="942" height="2048"></a></div><div class="demo-story"><p class="eyebrow">BeFit / Screenshot walkthrough</p><h3 class="demo-title"></h3><p class="demo-caption" aria-live="polite"></p><div class="demo-choices" aria-label="Choose a BeFit screen"></div><div class="demo-controls"><button class="demo-back" aria-label="Previous screen">←</button><span class="demo-count"></span><button class="demo-next" aria-label="Next screen">→</button></div><p class="demo-note">Explore all six screens. Select the phone image to view it full size.</p></div>';
+ let current=0;
+ const choices=demo.querySelector('.demo-choices');
+ screens.forEach((screen,index)=>{const button=document.createElement('button');button.textContent=screen[1];button.addEventListener('click',()=>show(index));choices.append(button)});
+ function show(index){current=(index+screens.length)%screens.length;const [file,label,title,caption]=screens[current];const image=demo.querySelector('.demo-screen');image.src='assets/projects/befit-'+file+'.png';image.alt='BeFit '+label;demo.querySelector('.demo-full').href=image.src;demo.querySelector('.demo-full').setAttribute('aria-label','Open '+label+' screenshot full size');demo.querySelector('.demo-title').textContent=title;demo.querySelector('.demo-caption').textContent=caption;demo.querySelector('.demo-count').textContent=(current+1)+' / '+screens.length;[...choices.children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===current)))}
+ demo.querySelector('.demo-back').addEventListener('click',()=>show(current-1));demo.querySelector('.demo-next').addEventListener('click',()=>show(current+1));
+ content.append(demo);show(0);
+}
